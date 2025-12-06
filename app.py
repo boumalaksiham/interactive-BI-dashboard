@@ -600,7 +600,7 @@ def create_dashboard():
             )
             
             # Update filter dropdowns when data is loaded
-            file_input.change(
+            df_state.change(
                 fn=lambda df: (
                     gr.Dropdown(choices=df.select_dtypes(include=[np.number]).columns.tolist() if df is not None else []),
                     gr.Dropdown(choices=df.select_dtypes(include=['object', 'category']).columns.tolist() if df is not None else []),
@@ -824,7 +824,7 @@ def create_dashboard():
                 )
             
             # Update dropdown choices when data changes
-            file_input.change(
+            df_state.change(
                 fn=lambda df: (
                     gr.Dropdown(choices=df.select_dtypes(include=['datetime64']).columns.tolist() if df is not None else []),
                     gr.Dropdown(choices=df.select_dtypes(include=[np.number]).columns.tolist() if df is not None else []),
@@ -906,13 +906,13 @@ def create_dashboard():
                     export_date_col = gr.Dropdown(label="Date Column (for Time Series)", choices=[], interactive=True, visible=False)
                     
                     # Update column choices when data loads
-                    file_input.change(
+                    df_state.change(
                         fn=lambda df: gr.Dropdown(choices=df.columns.tolist() if df is not None else []),
                         inputs=[df_state],
                         outputs=[export_column]
                     )
                     
-                    file_input.change(
+                    df_state.change(
                         fn=lambda df: gr.Dropdown(choices=df.select_dtypes(include=['datetime64']).columns.tolist() if df is not None else []),
                         inputs=[df_state],
                         outputs=[export_date_col]
