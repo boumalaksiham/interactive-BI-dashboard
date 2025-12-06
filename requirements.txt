@@ -1,5 +1,5 @@
-gradio==4.44.1
-huggingface_hub==0.25.2
+gradio==4.44.1           # Pin to the version suggested by the original logs
+huggingface_hub>=0.33.5
 pandas
 numpy
 matplotlib
