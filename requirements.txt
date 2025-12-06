@@ -1,4 +1,4 @@
-gradio==4.44.1           # Pin to the version suggested by original logs
+gradio==5.50.0          # Pin to the version suggested by original logs
 huggingface_hub>=0.33.5  # Crucial: Ensures the installed hf_hub is new enough
 pandas>=1.5.0
 matplotlib>=3.5.0
