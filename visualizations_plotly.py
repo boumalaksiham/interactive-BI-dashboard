@@ -44,32 +44,56 @@ class VisualizationManager:
     
     def create_time_series(self, df: pd.DataFrame, date_col: str, value_col: str, 
                           aggregation: str = 'sum', title: str = None) -> go.Figure:
-        """Create time series plot."""
+        """Create time series plot with proper date aggregation."""
         # Aggregate data by date
         df_copy = df.copy()
         df_copy[date_col] = pd.to_datetime(df_copy[date_col])
         
-        # Group by date and aggregate
-        if aggregation == 'sum':
-            grouped = df_copy.groupby(date_col)[value_col].sum().reset_index()
-        elif aggregation == 'mean':
-            grouped = df_copy.groupby(date_col)[value_col].mean().reset_index()
-        elif aggregation == 'count':
-            grouped = df_copy.groupby(date_col)[value_col].count().reset_index()
-        elif aggregation == 'median':
-            grouped = df_copy.groupby(date_col)[value_col].median().reset_index()
+        # Determine appropriate time period based on date range
+        date_range = (df_copy[date_col].max() - df_copy[date_col].min()).days
+        
+        if date_range <= 31:
+            # Less than a month - group by day
+            df_copy['period'] = df_copy[date_col].dt.date
+            period_label = "Day"
+        elif date_range <= 365:
+            # Less than a year - group by week or month
+            if date_range <= 90:
+                df_copy['period'] = df_copy[date_col].dt.to_period('W').dt.start_time
+                period_label = "Week"
+            else:
+                df_copy['period'] = df_copy[date_col].dt.to_period('M').dt.start_time
+                period_label = "Month"
         else:
-            grouped = df_copy.groupby(date_col)[value_col].sum().reset_index()
+            # More than a year - group by month
+            df_copy['period'] = df_copy[date_col].dt.to_period('M').dt.start_time
+            period_label = "Month"
         
-        fig = px.line(grouped, x=date_col, y=value_col, 
-                     title=title or f"{value_col} Over Time")
+        # Group by period and aggregate
+        if aggregation == 'sum':
+            grouped = df_copy.groupby('period')[value_col].sum().reset_index()
+        elif aggregation == 'mean':
+            grouped = df_copy.groupby('period')[value_col].mean().reset_index()
+        elif aggregation == 'count':
+            grouped = df_copy.groupby('period')[value_col].count().reset_index()
+        elif aggregation == 'median':
+            grouped = df_copy.groupby('period')[value_col].median().reset_index()
+        else:
+            grouped = df_copy.groupby('period')[value_col].sum().reset_index()
         
-        fig.update_traces(line=dict(color='#2E86AB', width=2))
+        fig = px.line(grouped, x='period', y=value_col, 
+                     title=title or f"{value_col} Over Time ({aggregation.title()} by {period_label})")
+        
+        fig.update_traces(line=dict(color='#2E86AB', width=3), mode='lines+markers')
         fig.update_layout(
-            xaxis_title=date_col,
-            yaxis_title=value_col,
+            xaxis_title=f"Date ({period_label})",
+            yaxis_title=f"{value_col} ({aggregation.title()})",
             hovermode='x unified',
-            template='plotly_white'
+            template='plotly_white',
+            xaxis=dict(
+                tickformat='%Y-%m-%d' if date_range <= 31 else '%Y-%m',
+                tickangle=-45
+            )
         )
         
         return fig
