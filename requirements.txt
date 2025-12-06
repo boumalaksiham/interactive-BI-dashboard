@@ -1,8 +1,9 @@
 gradio==4.44.1
-pandas==1.5.3
-numpy==1.23.5
-matplotlib==3.7.1
-seaborn==0.12.2
-plotly==5.18.0
-openpyxl==3.1.2
-scipy==1.10.1
+huggingface_hub>=0.23.0
+pandas
+numpy
+matplotlib
+seaborn
+plotly
+openpyxl
+scipy
