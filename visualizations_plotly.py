@@ -220,14 +220,23 @@ class VisualizationManager:
             if color_col and color_col != "None" and color_col in df_plot.columns:
                 fig = px.scatter(df_plot, x=x_col, y=y_col, color=color_col,
                                title=title or f"{y_col} vs {x_col}",
-                               trendline="ols", opacity=0.6)
+                               opacity=0.6)
             else:
                 fig = px.scatter(df_plot, x=x_col, y=y_col,
                                title=title or f"{y_col} vs {x_col}",
-                               trendline="ols", opacity=0.6)
+                               opacity=0.6)
                 fig.update_traces(marker=dict(color='#EF476F', size=5))
             
-            fig.update_layout(template='plotly_white')
+            # Add correlation coefficient to title
+            try:
+                corr = df_plot[[x_col, y_col]].corr().iloc[0, 1]
+                fig.update_layout(
+                    title=f"{title or f'{y_col} vs {x_col}'}<br><sub>Correlation: {corr:.3f}</sub>",
+                    template='plotly_white'
+                )
+            except:
+                fig.update_layout(template='plotly_white')
+            
             return fig
         except Exception as e:
             print(f"Error in scatter plot: {e}")
