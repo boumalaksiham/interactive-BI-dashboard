@@ -129,42 +129,117 @@ class VisualizationManager:
         return fig
     
     def create_category(self, df: pd.DataFrame, column: str, top_n: int = 10,
-                       plot_type: str = 'bar', title: str = None) -> go.Figure:
-        """Create category plot."""
-        # Get value counts
-        value_counts = df[column].value_counts().head(top_n)
+                       plot_type: str = 'bar', value_col: str = None, 
+                       aggregation: str = None, title: str = None) -> go.Figure:
+        """Create category plot - with optional value aggregation."""
         
-        if plot_type == 'bar':
-            fig = px.bar(x=value_counts.index, y=value_counts.values,
-                        title=title or f"Top {top_n} {column}",
-                        labels={'x': column, 'y': 'Count'})
-            fig.update_traces(marker_color='#06D6A0')
-        elif plot_type == 'pie':
-            fig = px.pie(values=value_counts.values, names=value_counts.index,
-                        title=title or f"Top {top_n} {column}")
-        else:
-            fig = px.bar(x=value_counts.index, y=value_counts.values,
-                        title=title or f"Top {top_n} {column}",
-                        labels={'x': column, 'y': 'Count'})
-        
-        fig.update_layout(template='plotly_white')
-        return fig
+        try:
+            if value_col and value_col != "None" and aggregation:
+                # Aggregate by category and value
+                if aggregation == 'sum':
+                    grouped = df.groupby(column)[value_col].sum().sort_values(ascending=False).head(top_n)
+                elif aggregation == 'mean':
+                    grouped = df.groupby(column)[value_col].mean().sort_values(ascending=False).head(top_n)
+                elif aggregation == 'count':
+                    grouped = df.groupby(column)[value_col].count().sort_values(ascending=False).head(top_n)
+                else:
+                    grouped = df.groupby(column)[value_col].sum().sort_values(ascending=False).head(top_n)
+                
+                value_label = f"{value_col} ({aggregation.title()})"
+            else:
+                # Simple value counts
+                grouped = df[column].value_counts().head(top_n)
+                value_label = "Count"
+            
+            if len(grouped) == 0:
+                # Return empty figure with message
+                fig = go.Figure()
+                fig.add_annotation(
+                    text=f"No data available for column: {column}",
+                    xref="paper", yref="paper",
+                    x=0.5, y=0.5, showarrow=False,
+                    font=dict(size=20)
+                )
+                return fig
+            
+            if plot_type == 'bar':
+                fig = px.bar(x=grouped.index, y=grouped.values,
+                            title=title or f"Top {top_n} {column}",
+                            labels={'x': column, 'y': value_label})
+                fig.update_traces(marker_color='#06D6A0')
+            elif plot_type == 'pie':
+                fig = px.pie(values=grouped.values, names=grouped.index,
+                            title=title or f"Top {top_n} {column}")
+            else:
+                fig = px.bar(x=grouped.index, y=grouped.values,
+                            title=title or f"Top {top_n} {column}",
+                            labels={'x': column, 'y': value_label})
+            
+            fig.update_layout(template='plotly_white', showlegend=False if plot_type == 'bar' else True)
+            return fig
+            
+        except Exception as e:
+            print(f"Error in category plot: {e}")
+            # Return empty figure with error message
+            fig = go.Figure()
+            fig.add_annotation(
+                text=f"Error creating category plot: {str(e)}",
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False,
+                font=dict(size=16, color="red")
+            )
+            return fig
     
     def create_scatter(self, df: pd.DataFrame, x_col: str, y_col: str,
                       color_col: str = None, title: str = None) -> go.Figure:
-        """Create scatter plot."""
-        if color_col and color_col in df.columns:
-            fig = px.scatter(df, x=x_col, y=y_col, color=color_col,
-                           title=title or f"{y_col} vs {x_col}",
-                           trendline="ols")
-        else:
-            fig = px.scatter(df, x=x_col, y=y_col,
-                           title=title or f"{y_col} vs {x_col}",
-                           trendline="ols")
-            fig.update_traces(marker=dict(color='#EF476F'))
+        """Create scatter plot with optional sampling for large datasets."""
+        # Sample if dataset is too large (for performance)
+        df_plot = df.copy()
+        if len(df_plot) > 10000:
+            df_plot = df_plot.sample(n=10000, random_state=42)
         
-        fig.update_layout(template='plotly_white')
-        return fig
+        # Remove rows with NaN in key columns
+        cols_to_check = [x_col, y_col]
+        if color_col and color_col != "None":
+            cols_to_check.append(color_col)
+        
+        df_plot = df_plot.dropna(subset=cols_to_check)
+        
+        if len(df_plot) == 0:
+            # Return empty figure with message
+            fig = go.Figure()
+            fig.add_annotation(
+                text="No valid data points to display",
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False,
+                font=dict(size=20)
+            )
+            return fig
+        
+        try:
+            if color_col and color_col != "None" and color_col in df_plot.columns:
+                fig = px.scatter(df_plot, x=x_col, y=y_col, color=color_col,
+                               title=title or f"{y_col} vs {x_col}",
+                               trendline="ols", opacity=0.6)
+            else:
+                fig = px.scatter(df_plot, x=x_col, y=y_col,
+                               title=title or f"{y_col} vs {x_col}",
+                               trendline="ols", opacity=0.6)
+                fig.update_traces(marker=dict(color='#EF476F', size=5))
+            
+            fig.update_layout(template='plotly_white')
+            return fig
+        except Exception as e:
+            print(f"Error in scatter plot: {e}")
+            # Return empty figure with error message
+            fig = go.Figure()
+            fig.add_annotation(
+                text=f"Error creating scatter plot: {str(e)}",
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False,
+                font=dict(size=16, color="red")
+            )
+            return fig
     
     def create_heatmap(self, df: pd.DataFrame, title: str = None) -> go.Figure:
         """Create correlation heatmap."""
