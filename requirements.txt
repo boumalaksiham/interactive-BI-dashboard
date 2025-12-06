@@ -1,5 +1,5 @@
-gradio>=5.50.0
-huggingface_hub>=0.33.5
+gradio>=5.50.0 # Use a high, stable version
+huggingface_hub>=0.33.5 # Ensure compatibility with modern Gradio
 pandas>=1.5.0
 matplotlib>=3.5.0
 seaborn>=0.12.0
