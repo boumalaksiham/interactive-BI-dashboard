@@ -947,18 +947,20 @@
 #             # Create visualization for export
 #             def create_export_visualization(df, viz_type, column, date_col):
 #                 """Create a visualization for export - returns both plot and figure."""
-#                 if df is None or df.empty or not column:
+#                 if df is None or df.empty:
 #                     return None, None
                 
 #                 try:
 #                     fig = None
-#                     if viz_type == "Distribution":
+#                     if viz_type == "Distribution" and column:
 #                         fig = create_distribution_plot(df, column, "histogram")
-#                     elif viz_type == "Time Series" and date_col:
+#                     elif viz_type == "Time Series" and date_col and column:
 #                         fig = create_time_series_plot(df, date_col, column, "sum")
-#                     elif viz_type == "Category Bar Chart":
-#                         fig = create_category_plot(df, column, 10, "bar")
+#                     elif viz_type == "Category Bar Chart" and column:
+#                         # Pass all required parameters for category plot
+#                         fig = create_category_plot(df, column, None, None, 10, "bar")
 #                     elif viz_type == "Correlation Heatmap":
+#                         # Heatmap doesn't need column selection
 #                         processor.df = df
 #                         corr = processor.get_correlation_matrix()
 #                         if not corr.empty:
@@ -968,6 +970,8 @@
 #                     return fig, fig
 #                 except Exception as e:
 #                     print(f"Error creating export visualization: {e}")
+#                     import traceback
+#                     traceback.print_exc()
 #                     return None, None
             
 #             create_export_viz_btn.click(
@@ -1005,7 +1009,6 @@
 #     # Launch the dashboard
 #     demo = create_dashboard()
 #     demo.launch(show_error=True)
-
 
 
 """
@@ -1948,7 +1951,7 @@ def create_dashboard():
                     create_export_viz_btn = gr.Button("Create Visualization", variant="primary")
                 
                 with gr.Column(scale=2):
-                    export_viz_plot = gr.Plot(label="Preview")
+                    export_viz_plot = gr.Plotly(label="Preview")
             
             with gr.Row():
                 export_viz_btn = gr.Button("Export as PNG", variant="secondary", size="lg")
@@ -2019,3 +2022,4 @@ if __name__ == "__main__":
     # Launch the dashboard
     demo = create_dashboard()
     demo.launch(show_error=True)
+
