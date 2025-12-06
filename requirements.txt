@@ -1,9 +1,9 @@
-gradio==4.44.1           # Pin this working version
-huggingface_hub>=0.33.5  # Ensure compatibility
-pandas
-numpy
-matplotlib
-seaborn
-plotly
-openpyxl
-scipy
+gradio==4.44.1              # Matches the sdk_version in README.md
+huggingface_hub>=0.33.5     # Required for modern Gradio versions
+pandas>=1.5.0
+matplotlib>=3.5.0
+seaborn>=0.12.0
+plotly>=5.14.0
+openpyxl>=3.0.0
+numpy>=1.23.0
+scipy>=1.9.0
