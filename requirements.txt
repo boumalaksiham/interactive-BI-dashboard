@@ -1,6 +1,5 @@
-gradio>=5.50.0  # Or any other version 4.44.1 or higher
-# Ensure the line below is either removed or updated:
-huggingface_hub>=0.33.5 # Or just remove the line entirely
+gradio>=5.50.0
+huggingface_hub>=0.33.5
 pandas>=1.5.0
 matplotlib>=3.5.0
 seaborn>=0.12.0
