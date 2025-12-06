@@ -1,9 +1,0 @@
-gradio==3.50.2
-huggingface_hub==0.17.3
-pandas
-numpy
-matplotlib
-seaborn
-plotly
-openpyxl
-scipy
