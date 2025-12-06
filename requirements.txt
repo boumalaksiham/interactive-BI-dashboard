@@ -1,5 +1,5 @@
 gradio==3.50.2
-huggingface_hub==0.17.3
+huggingface_hub==0.14.1
 pandas
 numpy
 matplotlib
