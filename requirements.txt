@@ -1,5 +1,5 @@
-gradio==4.44.1
-huggingface_hub>=0.23.0
+gradio==3.50.2
+huggingface_hub==0.17.3
 pandas
 numpy
 matplotlib
