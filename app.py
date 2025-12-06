@@ -1107,4 +1107,5 @@ if __name__ == "__main__":
     os.makedirs("outputs", exist_ok=True)
 
     demo = create_dashboard()
-    demo.launch(show_error=True)
+    demo.launch(show_api=False, show_error=True)
+
