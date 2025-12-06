@@ -950,7 +950,14 @@ def create_dashboard():
                     elif viz_type == "Time Series" and date_col:
                         fig = create_time_series_plot(df, date_col, column, "sum")
                     elif viz_type == "Category Bar Chart":
-                        fig = create_category_plot(df, column, 10, "bar")
+                        fig = create_category_plot(
+                            df,
+                            column,        # category column
+                            None,          # value column is optional
+                            "count",       # aggregation
+                            10,            # top N
+                            "bar"          # plot type
+                        )    
                     elif viz_type == "Correlation Heatmap":
                         processor.df = df
                         corr = processor.get_correlation_matrix()
