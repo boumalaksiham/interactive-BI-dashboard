@@ -1,3 +1,14 @@
+---
+title: Business Intelligence Dashboard
+emoji: 📊
+colorFrom: indigo
+colorTo: blue
+sdk: gradio
+sdk_version: "4.29.0"
+app_file: app.py
+pinned: false
+---
+
 # Business Intelligence Dashboard
 
 A comprehensive data analysis application built with Python, pandas, and Gradio. This dashboard provides interactive data exploration, visualization, and automated insight generation for business intelligence.
@@ -42,8 +53,6 @@ pip install -r requirements.txt
 ```bash
 python app.py
 ```
-
-4. **Open in browser**: Go to `http://localhost:7860`
 
 ---
 
@@ -127,7 +136,9 @@ The key is to use **`python -m pip`** instead of just `pip`. This ensures packag
 
 ### 6. Export Results
 - Navigate to "Export" tab
+- Click on Export Filtered Dataset 
 - Download filtered data as CSV
+- Click on Export Visualization
 - Save visualizations as PNG images
 
 ## Project Structure
@@ -143,7 +154,8 @@ bi_dashboard/
 ├── requirements.txt      # Python dependencies
 ├── README.md            # This file
 └── data/                # Sample datasets
-    └── (your data files)
+    └── (Online Retail.csv)
+    └── (Amazon.csv)  
 ```
 
 ## Architecture
@@ -194,7 +206,7 @@ class VisualizationStrategy(ABC):
 - CorrelationHeatmapStrategy
 ```
 
-## 🔧 Key Technologies
+## Key Technologies
 
 - **pandas**: Data manipulation and analysis
 - **Gradio**: Web interface and interactivity
@@ -246,24 +258,10 @@ Potential additions with more development time:
 - Database connectivity (PostgreSQL, MySQL)
 - Advanced ML features (clustering, classification)
 - Real-time data streaming
-- Multi-sheet Excel support
 - Custom aggregation functions
 - Report generation (PDF/Word)
 - User authentication
 - Data caching for performance
-- More visualization types (treemaps, sunburst, 3D plots)
-
-## License
-
-This project is created for educational purposes as part of a machine learning course assignment.
-
-## Contributing
-
-This is an academic project. For questions or suggestions, please contact the project author.
-
-## Contact
-
-For questions about this project, please reach out through the course platform.
 
 ---
 
