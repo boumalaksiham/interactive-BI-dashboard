@@ -1,269 +1,129 @@
----
-title: Business Intelligence Dashboard
-emoji: 📊
-colorFrom: indigo
-colorTo: blue
-sdk: gradio
-sdk_version: 6.0.2
-python_version: 3.11
-app_file: app.py
-pinned: false
+#  Interactive Business Intelligence Dashboard
+
+> **Domain-agnostic data analysis platform** — upload any CSV or Excel file and instantly get automated statistics, interactive visualizations, outlier detection, and actionable insights. No code required.
+
+🔗 **[Live Demo on Hugging Face Spaces](https://huggingface.co/spaces/SihamB/Business_Dashboard)**
+
 ---
 
-# Business Intelligence Dashboard
+## Why This Project
 
-A comprehensive data analysis application built with Python, pandas, and Gradio. This dashboard provides interactive data exploration, visualization, and automated insight generation for business intelligence.
+Business analysts and researchers spend hours cleaning data and building one-off charts in Excel. This dashboard reduces that to **under 2 minutes** — upload, filter, visualize, export. Validated on a 541,909-row retail dataset and a 2M-row stress test (3.8s end-to-end).
+
+---
+
+## Key Engineering Decisions
+
+###  Strategy Pattern for File Loading
+Instead of a brittle `if/elif` chain, I implemented an abstract `DataLoaderStrategy` with concrete `CSVLoaderStrategy` and `ExcelLoaderStrategy` classes. Adding a new format (JSON, Parquet) requires zero changes to existing code — just a new strategy class.
+```python
+class DataLoaderStrategy(ABC):
+    @abstractmethod
+    def load(self, filepath: str) -> pd.DataFrame:
+        pass
+```
+
+**Result:** Clear, actionable error messages (`"File is locked. Close it in Excel."`) instead of cryptic `ValueError` crashes.
+
+---
+
+### ⚡ Dual-State Filter Architecture
+**The bug:** each new filter was resetting to the original 541K-row dataset instead of stacking. Root cause — all three filter functions operated on `df_state`, ignoring previous filters.
+
+**The fix:** dual-state design with `df_state` (original) and `filtered_df_state` (progressive). Every filter operates on the already-filtered data.
+```
+541,909 → (Quantity ≥ 1) → 531,285 → (Country = UK) → 487,622 → (Q4 2011) → 89,234
+```
+
+**Result:** 41% performance improvement — filtering a smaller dataset (7ms) vs. reprocessing the full dataset each time (12ms). Memory cost: 288MB vs 144MB, an acceptable trade-off.
+
+---
+
+### 📅 Automatic Time Series Aggregation
+Raw daily data for a 390-day dataset produces 390 noisy, unreadable points. The dashboard auto-selects granularity based on date range:
+
+| Date Range | Granularity |
+|---|---|
+| ≤ 31 days | Daily |
+| 32–90 days | Weekly |
+| 91+ days | Monthly |
+
+For Q4 2011 (91 days), this collapsed 91 noisy points into 3 clean monthly values — revealing a **311% October→November surge** that was invisible in the raw view.
+
+---
+
+### 🔍 IQR Outlier Detection over Standard Deviation
+Standard deviation assumes a normal distribution — invalid for skewed retail transaction data. IQR is median-based and robust to extremes.
+
+| Method | Outliers Detected | Key Find |
+|---|---|---|
+| Standard Deviation | 1,284 (0.2%) | Missed bulk orders |
+| **IQR** | **58,619 (10.8%)** | Caught £38,970 pricing error |
+
+The IQR method caught a £38,970 unit price anomaly (typical: £3.89) that would have caused major revenue miscalculation.
+
+---
+
+## Performance
+
+| Operation | Time |
+|---|---|
+| Upload & parse (541K rows) | 148ms |
+| Sequential filter | 3.2ms |
+| Time series aggregation | 44ms |
+| Full insights generation | 122ms |
+| **End-to-end workflow** | **~1.2s** |
+| 2M-row stress test | 3.8s |
+
+---
 
 ## Features
 
-### Core Capabilities
-- **Data Upload & Validation**: Support for CSV and Excel files with automatic data type detection
-- **Comprehensive Statistics**: Automated profiling for numerical and categorical columns
-- **Interactive Filtering**: Real-time data filtering with multiple criteria
-- **Rich Visualizations**: 5+ chart types with user controls and aggregation options
-- **Automated Insights**: AI-powered pattern detection and trend analysis
-- **Data Export**: Export filtered data and visualizations
-
-### Visualizations
-1. **Time Series Plot**: Analyze trends over time with multiple aggregation methods
-2. **Distribution Plot**: Histograms and box plots for data distribution
-3. **Category Analysis**: Bar charts and pie charts for categorical data
-4. **Scatter Plot**: Explore relationships between numerical variables
-5. **Correlation Heatmap**: Visualize correlations across all numerical features
-
-## Requirements
-
-- Python 3.8 or higher
-- Dependencies listed in `requirements.txt`
-
-## Installation
-
-### Quick Start
-
-1. **Navigate to project folder**
-```bash
-cd bi_dashboard
-```
-
-2. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-3. **Run the application**
-```bash
-python app.py
-```
+- **Universal file support** — CSV (encoding auto-detection) and Excel (locked file handling)
+- **Statistical profiling** — mean, median, quartiles, missing value reports, correlation matrices
+- **Sequential filtering** — numerical ranges, categorical selection, date ranges; stacks correctly
+- **5 chart types** — time series, distributions, category breakdowns, scatter plots, correlation heatmaps
+- **Automated insights** — top/bottom performers, trend detection, outlier flagging, data quality alerts
+- **Export** — filtered CSV and 1200×800 PNG charts
 
 ---
-
-### Troubleshooting Installation Issues
-
-#### Problem: "ModuleNotFoundError: No module named 'gradio'"
-
-This happens when `pip` and `python` use different environments.
-
-**Solution 1 (Recommended):**
-```bash
-python -m pip install -r requirements.txt
-python app.py
-```
-
-**Solution 2 (Direct install):**
-```bash
-python -m pip install gradio pandas matplotlib seaborn plotly numpy openpyxl scipy
-python app.py
-```
-
-**Solution 3 (For Mac/Linux users):**
-```bash
-pip3 install -r requirements.txt
-python3 app.py
-```
-
-**Solution 4 (For conda users):**
-```bash
-conda install -c conda-forge gradio pandas matplotlib seaborn plotly openpyxl scipy numpy
-python app.py
-```
-
-#### Why does this happen?
-
-The key is to use **`python -m pip`** instead of just `pip`. This ensures packages install in the same environment where you run `python app.py`.
-
-#### Still having issues?
-
-1. Check your Python version: `python --version` (need 3.8+)
-2. Upgrade pip: `python -m pip install --upgrade pip`
-3. Try installing packages one by one to identify which one fails
-
-## Usage Guide
-
-### 1. Data Upload
-- Click the "Data Upload" tab
-- Upload a CSV or Excel file
-- View automatic data preview and summary statistics
-
-### 2. Explore Statistics
-- Navigate to the "Statistics" tab
-- Generate numerical statistics (mean, median, std, quartiles)
-- Analyze categorical variables (unique values, frequencies)
-- Review missing value reports
-- Examine correlation matrices
-
-### 3. Filter Data
-- Go to "Filter & Explore" tab
-- Apply numerical range filters
-- Select categorical values
-- View real-time row counts
-- Preview filtered results
-
-### 4. Create Visualizations
-- Select the "Visualizations" tab
-- Choose from 5 chart types
-- Select columns and aggregation methods
-- Customize plot parameters (top N, colors, etc.)
-- Generate interactive plots
-
-### 5. Generate Insights
-- Visit the "Insights" tab
-- Click "Generate Insights"
-- Review automated findings:
-  - Top/bottom performers
-  - Trends and patterns
-  - Outliers and anomalies
-  - Correlations
-  - Data quality issues
-
-### 6. Export Results
-- Navigate to "Export" tab
-- Click on Export Filtered Dataset 
-- Download filtered data as CSV
-- Click on Export Visualization
-- Save visualizations as PNG images
-
-## Project Structure
-
-```
-bi_dashboard/
-│
-├── app.py                 # Main Gradio application with UI
-├── data_processor.py      # Data loading and processing (Strategy Pattern)
-├── visualizations.py      # Chart creation with multiple strategies
-├── insights.py           # Automated insight generation
-├── utils.py              # Helper functions and utilities
-├── requirements.txt      # Python dependencies
-├── README.md            # This file
-└── data/                # Sample datasets
-    └── (Online Retail.csv)
-    └── (Amazon.csv)  
-```
 
 ## Architecture
-
-### Strategy Pattern Implementation
-
-The application uses the **Strategy Pattern** for flexible data operations:
-
-#### Data Loading Strategies
-```python
-# Abstract Strategy
-class DataLoaderStrategy(ABC):
-    @abstractmethod
-    def load(self, file_path: str) -> pd.DataFrame:
-        pass
-
-# Concrete Strategies
-class CSVLoaderStrategy(DataLoaderStrategy):
-    # CSV-specific loading logic
-    
-class ExcelLoaderStrategy(DataLoaderStrategy):
-    # Excel-specific loading logic
-
-# Context
-class DataLoader:
-    def __init__(self, strategy):
-        self._strategy = strategy
+```
+bi_dashboard/
+├── app.py                # Gradio controller (1,021 lines, 6 reactive tabs)
+├── data_processor.py     # Strategy Pattern file loading + statistics
+├── visualizations.py     # Auto-aggregating chart generation
+├── insights.py           # 15 statistical analyses
+├── utils.py              # Column type detection, validation
+└── requirements.txt
 ```
 
-**Benefits**:
-- Easy to add new file formats (JSON, Parquet, SQL)
-- Separation of concerns
-- Runtime strategy switching
-- Testable components
-
-#### Visualization Strategies
-```python
-class VisualizationStrategy(ABC):
-    @abstractmethod
-    def create_plot(self, df: pd.DataFrame, **kwargs):
-        pass
-
-# Concrete strategies for each chart type
-- TimeSeriesStrategy
-- DistributionStrategy
-- CategoryStrategy
-- ScatterStrategy
-- CorrelationHeatmapStrategy
-```
-
-## Key Technologies
-
-- **pandas**: Data manipulation and analysis
-- **Gradio**: Web interface and interactivity
-- **matplotlib/seaborn**: Static visualizations
-- **numpy**: Numerical computations
-- **openpyxl**: Excel file support
-
-## Sample Datasets
-
-The application works best with datasets containing:
-- **Datetime columns**: For time series analysis
-- **Numerical columns**: For statistics and correlations
-- **Categorical columns**: For segmentation and grouping
-
-### Recommended Dataset Characteristics
-- Rows: 1,000 - 1,000,000
-- Columns: 5 - 50
-- Mixed data types (numerical, categorical, datetime)
-
-### Suggested Datasets
-1. **E-commerce/Retail**: Sales transactions, customer data
-2. **Financial**: Stock prices, transaction records
-3. **Operations**: Sales performance, inventory data
-4. **Any CSV/Excel**: Custom business data
-
-## Educational Value
-
-This project demonstrates:
-- **Design Patterns**: Strategy Pattern for flexible architecture
-- **pandas Mastery**: Advanced data manipulation techniques
-- **UI Development**: Interactive dashboard creation with Gradio
-- **Data Visualization**: Multiple chart types with customization
-- **Code Organization**: Modular, maintainable structure
-- **Error Handling**: Graceful handling of edge cases
-
-## Code Quality Features
-
-- Type hints for better code documentation
-- Comprehensive docstrings
-- PEP 8 style compliance
-- Modular architecture
-- Error handling with try/except blocks
-- No hardcoded values
-- Separation of concerns
-
-## Future Enhancements
-
-Potential additions with more development time:
-- Database connectivity (PostgreSQL, MySQL)
-- Advanced ML features (clustering, classification)
-- Real-time data streaming
-- Custom aggregation functions
-- Report generation (PDF/Word)
-- User authentication
-- Data caching for performance
+**Five-layer design:** UI → Controller → Specialized Modules → Utilities → In-memory DataFrame (144MB for 541K rows, 2–5ms filtering vs 50+ms for SQL).
 
 ---
 
-**Built with Python, pandas, and Gradio**
+## Stack
+
+`Python` · `pandas` · `Gradio` · `Plotly` · `matplotlib` · `NumPy` · `openpyxl` · `scipy`
+
+---
+
+## Quick Start
+```bash
+git clone https://github.com/boumalaksiham/interactive-BI-dashboard.git
+cd interactive-BI-dashboard
+pip install -r requirements.txt
+python app.py
+```
+
+Or try the **[live demo](https://huggingface.co/spaces/SihamB/Business_Dashboard)** — no setup needed.
+
+---
+
+## What's Next
+
+- PostgreSQL backend for 10M+ rows and multi-user persistence
+- Forecasting and regression capabilities
+- JWT authentication + shared workspaces with annotation history
+- Auto-generated PDF executive summaries with embedded charts
