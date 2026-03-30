@@ -2,7 +2,7 @@
 
 > **Domain-agnostic data analysis platform** — upload any CSV or Excel file and instantly get automated statistics, interactive visualizations, outlier detection, and actionable insights. No code required.
 
- **[Live Demo on Hugging Face Spaces](https://huggingface.co/spaces/SihamB/Business_Dashboard)**
+🔗 **[Live Demo on Hugging Face Spaces](https://huggingface.co/spaces/SihamB/Business_Dashboard)**
 
 ---
 
