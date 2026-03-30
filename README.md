@@ -2,7 +2,7 @@
 
 > **Domain-agnostic data analysis platform** — upload any CSV or Excel file and instantly get automated statistics, interactive visualizations, outlier detection, and actionable insights. No code required.
 
-🔗 **[Live Demo on Hugging Face Spaces](https://huggingface.co/spaces/SihamB/Business_Dashboard)**
+ **[Live Demo on Hugging Face Spaces](https://huggingface.co/spaces/SihamB/Business_Dashboard)**
 
 ---
 
@@ -27,7 +27,7 @@ class DataLoaderStrategy(ABC):
 
 ---
 
-### ⚡ Dual-State Filter Architecture
+###  Dual-State Filter Architecture
 **The bug:** each new filter was resetting to the original 541K-row dataset instead of stacking. Root cause — all three filter functions operated on `df_state`, ignoring previous filters.
 
 **The fix:** dual-state design with `df_state` (original) and `filtered_df_state` (progressive). Every filter operates on the already-filtered data.
@@ -39,7 +39,7 @@ class DataLoaderStrategy(ABC):
 
 ---
 
-### 📅 Automatic Time Series Aggregation
+###  Automatic Time Series Aggregation
 Raw daily data for a 390-day dataset produces 390 noisy, unreadable points. The dashboard auto-selects granularity based on date range:
 
 | Date Range | Granularity |
