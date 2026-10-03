@@ -193,7 +193,7 @@ Or try the **[live demo](https://huggingface.co/spaces/SihamB/Business_Dashboard
 M.S. Artificial Intelligence — Northeastern University, Khoury College of Computer Sciences
 Concentration: Machine Learning | Expected 2027
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat-square&logo=linkedin)](linkedin.com/in/siham-boumalak-11014b210)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/siham-boumalak/)
 [![GitHub](https://img.shields.io/badge/GitHub-boumalaksiham-181717?style=flat-square&logo=github)](https://github.com/boumalaksiham)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Hugging%20Face-FF7C00?style=flat-square&logo=huggingface)](https://huggingface.co/spaces/SihamB/Business_Dashboard)
 
