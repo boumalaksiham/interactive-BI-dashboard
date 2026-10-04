@@ -2,6 +2,14 @@
 
 A **Gradio** application for exploring uploaded tabular data with pandas and Plotly. Users can inspect data, apply filters, create visualizations, view descriptive insights and export filtered rows or charts.
 
+## An example analysis session
+
+For a sales table, a reviewer can inspect missing values, filter to a relevant subset, choose numeric columns for a compatible chart, and export the filtered rows for follow-up. Date-based views additionally require a suitable date column. The dashboard operates on the uploaded schema rather than assuming one fixed business dataset.
+
+**Design choice:** keep loading/filtering, chart construction, and descriptive insights in separate modules. This lets a reader inspect the transformation behind a chart and distinguish calculated summaries from business interpretation. Automated insights summarize data patterns; they do not supply evidence of causation.
+
+**Start here:** [app.py](app.py) connects the interface to [data_processor.py](data_processor.py), [visualizations_plotly.py](visualizations_plotly.py), and [insights.py](insights.py).
+
 ## Workflow
 
 1. Upload a CSV or Excel workbook.
